@@ -1,0 +1,17 @@
+###############################################################################
+# NAME:             Makefile.emscripten
+#
+# AUTHOR:           Ethan D. Twardy <edtwardy@mtu.edu>
+#
+# DESCRIPTION:      Makefile for the emscripten JS library
+#
+# CREATED:          09/03/2020
+#
+# LAST EDITED:      09/03/2020
+###
+
+.libs/libFLAC++.js: .libs/libFLAC++.6.dylib-master.o emscripten_bindings.cpp
+	emcc --bind -I../../include -L../libFLAC/.libs -lFLAC-static \
+		$< emscripten_bindings.cpp -o $@
+
+###############################################################################
