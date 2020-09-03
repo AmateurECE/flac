@@ -23,7 +23,7 @@ public:
   //     *frame, const FLAC__int32 * const buffer[]) = 0;
 
   virtual int readCallback(val byteBuffer) = 0;
-  virtual ::FLAC__StreamDecoderWriteStatus writeCallback() = 0;
+  virtual ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) = 0;
 
   virtual void errorCallback(::FLAC__StreamDecoderErrorStatus status) = 0;
 
@@ -43,7 +43,13 @@ protected:
 
   virtual ::FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame
       *frame, const FLAC__int32 * const buffer[]) final override {
-    return writeCallback();
+    val lpcmBuffer = val::array();
+    uint32_t blocksize = frame->header.blocksize;
+    for (uint32_t i = 0; i < frame->header.channels; i++) {
+      lpcmBuffer.call<void>("push", val(typed_memory_view(blocksize,
+                  buffer[i])));
+    }
+    return writeCallback(lpcmBuffer);
   }
 
   virtual void error_callback(::FLAC__StreamDecoderErrorStatus status) final
@@ -59,8 +65,8 @@ public:
     return call<int>("readCallback", buffer);
   }
 
-  ::FLAC__StreamDecoderWriteStatus writeCallback() {
-    return call<::FLAC__StreamDecoderWriteStatus>("writeCallback");
+  ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) {
+    return call<::FLAC__StreamDecoderWriteStatus>("writeCallback", lpcmBuffer);
   }
 
   void errorCallback(::FLAC__StreamDecoderErrorStatus status) {
@@ -73,6 +79,9 @@ EMSCRIPTEN_BINDINGS(flac) {
     .function("readCallback", &StreamDecoder::readCallback, pure_virtual())
     .function("writeCallback", &StreamDecoder::writeCallback, pure_virtual())
     .function("errorCallback", &StreamDecoder::errorCallback, pure_virtual())
+    .function("process_until_end_of_metadata",
+        &StreamDecoder::process_until_end_of_metadata)
+    .function("process_single", &StreamDecoder::process_single)
     .allow_subclass<StreamDecoderWrapper>("StreamDecoderWrapper");
 }
 
