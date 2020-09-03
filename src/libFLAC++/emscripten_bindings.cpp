@@ -19,12 +19,10 @@ using namespace emscripten;
 class StreamDecoder : public FLAC::Decoder::Stream {
 public:
   StreamDecoder() = default;
-  // virtual ::FLAC__StreamDecoderReadStatus readCallback(FLAC__byte buffer[],
-  //     size_t *bytes) = 0;
   // virtual ::FLAC__StreamDecoderWriteStatus writeCallback(const ::FLAC__Frame
   //     *frame, const FLAC__int32 * const buffer[]) = 0;
 
-  virtual ::FLAC__StreamDecoderReadStatus readCallback() = 0;
+  virtual int readCallback(val byteBuffer) = 0;
   virtual ::FLAC__StreamDecoderWriteStatus writeCallback() = 0;
 
   virtual void errorCallback(::FLAC__StreamDecoderErrorStatus status) = 0;
@@ -32,7 +30,15 @@ public:
 protected:
   virtual ::FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[],
       size_t *bytes) final override {
-    return readCallback();
+    const int bytesRead = readCallback(val(typed_memory_view(*bytes, buffer)));
+    if (0 == bytesRead) {
+      return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+    } else if (0 > bytesRead) {
+      return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+    } else {
+      *bytes = (size_t)bytesRead;
+      return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+    }
   }
 
   virtual ::FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame
@@ -49,8 +55,8 @@ protected:
 class StreamDecoderWrapper : public wrapper<StreamDecoder> {
 public:
   EMSCRIPTEN_WRAPPER(StreamDecoderWrapper);
-  ::FLAC__StreamDecoderReadStatus readCallback() {
-    return call<::FLAC__StreamDecoderReadStatus>("readCallback");
+  int readCallback(val buffer) {
+    return call<int>("readCallback", buffer);
   }
 
   ::FLAC__StreamDecoderWriteStatus writeCallback() {
