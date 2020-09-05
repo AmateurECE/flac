@@ -7,7 +7,7 @@
 #
 # CREATED:          09/03/2020
 #
-# LAST EDITED:      09/03/2020
+# LAST EDITED:      09/04/2020
 ###
 
 # How to build up to this point:
@@ -18,7 +18,8 @@
 # emmake make -C src/libFLAC++ -f src/libFLAC++/Makefile.emscripten
 
 CC = emcc
-CFLAGS = -Wall -Wextra --bind -I../../include
+CFLAGS = -Wall -Wextra --bind -I../../include -s MODULARIZE=1 \
+       -s FILESYSTEM=0
 LDFLAGS = -L../libFLAC/.libs -lFLAC-static
 
 .libs/libFLAC++.js: .libs/libFLAC++.6.dylib-master.o emscripten_bindings.cpp
