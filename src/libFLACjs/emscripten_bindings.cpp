@@ -13,95 +13,9 @@
 #include <emscripten/bind.h>
 
 #include "FLAC++/decoder.h"
+#include "StreamDecoder.h"
 
 using namespace emscripten;
-
-class StreamDecoder : public FLAC::Decoder::Stream {
-public:
-  StreamDecoder() = default;
-
-  // TODO: Return an Object which has a status code and a bytesRead property?
-  virtual val readCallback(val byteBuffer) = 0;
-  // TODO: Somehow pass the FLAC__Frame to the callee?
-  virtual ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) = 0;
-
-  virtual void errorCallback(::FLAC__StreamDecoderErrorStatus status) = 0;
-  virtual void metadataCallback(val) = 0;
-
-protected:
-  virtual ::FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[],
-      size_t *bytes) final override {
-    val result = readCallback(val(typed_memory_view(*bytes, buffer)));
-    *bytes = result["bytesRead"].as<size_t>();
-    const auto status = result["status"].as<::FLAC__StreamDecoderReadStatus>();
-    return status;
-  }
-
-  virtual ::FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame
-      *frame, const FLAC__int32 * const buffer[]) final override {
-    val lpcmBuffer = val::array();
-    uint32_t blocksize = frame->header.blocksize;
-    for (uint32_t i = 0; i < frame->header.channels; i++) {
-      lpcmBuffer.call<void>("push", val(typed_memory_view(blocksize,
-                  buffer[i])));
-    }
-    return writeCallback(lpcmBuffer);
-  }
-
-  virtual void error_callback(::FLAC__StreamDecoderErrorStatus status) final
-    override {
-    errorCallback(status);
-  }
-
-  virtual void metadata_callback(const ::FLAC__StreamMetadata* metadata) final
-    override {
-    val tagObject = val::object();
-    tagObject.set("type", metadata->type);
-
-    switch (metadata->type) {
-    case FLAC__METADATA_TYPE_STREAMINFO:
-      break;
-    case FLAC__METADATA_TYPE_PADDING:
-      break;
-    case FLAC__METADATA_TYPE_APPLICATION:
-      break;
-    case FLAC__METADATA_TYPE_SEEKTABLE:
-      break;
-    case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-      break;
-    case FLAC__METADATA_TYPE_CUESHEET:
-      break;
-    case FLAC__METADATA_TYPE_PICTURE:
-      break;
-    case FLAC__METADATA_TYPE_UNDEFINED:
-      break;
-    default:
-      break;
-    }
-
-    metadataCallback(tagObject);
-  }
-};
-
-class StreamDecoderImpl : public wrapper<StreamDecoder> {
-public:
-  EMSCRIPTEN_WRAPPER(StreamDecoderImpl);
-  val readCallback(val buffer) {
-    return call<val>("readCallback", buffer);
-  }
-
-  ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) {
-    return call<::FLAC__StreamDecoderWriteStatus>("writeCallback", lpcmBuffer);
-  }
-
-  void errorCallback(::FLAC__StreamDecoderErrorStatus status) {
-    return call<void>("error_callback", status);
-  }
-
-  void metadataCallback(val data) {
-    return call<void>("metadataCallback", data);
-  }
-};
 
 // TODO: Create directory libFLACjs
 // This directory will link against libFLAC++, and the makefile will produce

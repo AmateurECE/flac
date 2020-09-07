@@ -21,12 +21,15 @@
 # -s STANDALONE_WASM --no-entry -s WASM=1
 # (Change output filename to *.wasm)
 
-CC = emcc
+CC = em++
 CFLAGS = -Wall -Wextra --bind -I../../include -s MODULARIZE=1 \
        -s FILESYSTEM=0 -Os
 LDFLAGS = -L../libFLAC/.libs -lFLAC-static -L../libFLAC++/.libs -lFLAC++-static
+SOURCES = \
+	emscripten_bindings.cpp \
+	StreamDecoder.cpp
 
-.libs/libFLAC.js: emscripten_bindings.cpp
+.libs/libFLAC.js: $(SOURCES)
 	mkdir -p .libs
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
