@@ -1,3 +1,32 @@
+Port of FLAC to JavaScript using Emscripten
+
+Author of this port: Ethan D. Twardy
+
+This port was created with the goal of attempting to mirror the libFLAC++ API
+as much as possible. To compile the library, Emscripten must be installed.
+Then, follow the procedure below:
+
+  1. ./autogen.sh && autoreconf --install && automake
+  2. LT_MUTLI_MODULE=1 emconfigure ./configure --disable-asm-optimizations
+  3. emmake make -C src/libFLAC
+  4. emmake make -C src/libFLAC++
+  5. make -C src/libFLACjs -f Makefile.emscripten
+
+This will generate two files in src/libFLACjs/.libs: libFLAC.js and
+libFLAC.wasm. The .wasm file contains the actual port of the library, and the
+.js library implements the wasm loader, so both are needed to utilize the
+library. The file src/libFLACjs/example.mjs implements a very simple usage of
+the library's StreamDecoder class to decode a single FLAC frame from a file
+and print the arrays to the console. To test it, run:
+
+  node example.mjs <flacPath>
+
+Where flacPath is a filesystem path to an existing FLAC file on the system.
+
+/******************************************************************************
+ ******************************* ORIGINAL README ******************************
+ *****************************************************************************/
+
 /* FLAC - Free Lossless Audio Codec
  * Copyright (C) 2001-2009  Josh Coalson
  * Copyright (C) 2011-2016  Xiph.Org Foundation
