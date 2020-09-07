@@ -7,10 +7,11 @@
 //
 // CREATED:         09/01/2020
 //
-// LAST EDITED:     09/05/2020
+// LAST EDITED:     09/07/2020
 ////
 
 #include <emscripten/bind.h>
+#include <stdint.h>
 
 #include "FLAC++/decoder.h"
 
@@ -26,6 +27,9 @@ public:
   virtual ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) = 0;
 
   virtual void errorCallback(::FLAC__StreamDecoderErrorStatus status) = 0;
+
+  // Metadata callbacks
+  virtual void streamInfoCallback(::FLAC__StreamMetadata_StreamInfo) {}
 
 protected:
   virtual ::FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[],
@@ -51,6 +55,16 @@ protected:
     override {
     errorCallback(status);
   }
+
+  virtual void metadata_callback(const ::FLAC__StreamMetadata* metadata) final
+    override {
+    switch (metadata->type) {
+    case FLAC__METADATA_TYPE_STREAMINFO:
+      streamInfoCallback(metadata->data.stream_info);
+      return;
+    default: return;
+    }
+  }
 };
 
 class StreamDecoderImpl : public wrapper<StreamDecoder> {
@@ -67,6 +81,10 @@ public:
   void errorCallback(::FLAC__StreamDecoderErrorStatus status) {
     return call<void>("error_callback", status);
   }
+
+  void streamInfoCallback(::FLAC__StreamMetadata_StreamInfo info) {
+    return call<void>("streamInfoCallback", info);
+  }
 };
 
 // TODO: Create directory libFLACjs
@@ -77,6 +95,22 @@ public:
 // would actually have motivation to integrate it.
 
 EMSCRIPTEN_BINDINGS(flac) {
+  //
+  // Bindings for metadata
+  //
+  value_object<::FLAC__StreamMetadata_StreamInfo>("StreamInfo")
+    .field("min_blocksize", &::FLAC__StreamMetadata_StreamInfo::min_blocksize)
+    .field("max_blocksize", &::FLAC__StreamMetadata_StreamInfo::max_blocksize)
+    .field("min_framesize", &::FLAC__StreamMetadata_StreamInfo::min_framesize)
+    .field("max_framesize", &::FLAC__StreamMetadata_StreamInfo::max_framesize)
+    .field("sample_rate", &::FLAC__StreamMetadata_StreamInfo::sample_rate)
+    .field("channels", &::FLAC__StreamMetadata_StreamInfo::channels)
+    .field("bits_per_sample",
+        &::FLAC__StreamMetadata_StreamInfo::bits_per_sample)
+    // TODO: field "total_samples"
+    // TODO: field "md5sum"
+    ;
+
   //
   // Bindings for enumerations
   //
@@ -124,10 +158,15 @@ EMSCRIPTEN_BINDINGS(flac) {
     .function("init", &FLAC::Decoder::Stream::init)
     ;
 
+  const auto streamInfo = [](StreamDecoder& self,
+      ::FLAC__StreamMetadata_StreamInfo info) {
+                      return self.StreamDecoder::streamInfoCallback(info);
+                    };
   class_<StreamDecoder, base<FLAC::Decoder::Stream>>("StreamDecoder")
     .function("readCallback", &StreamDecoder::readCallback, pure_virtual())
     .function("writeCallback", &StreamDecoder::writeCallback, pure_virtual())
     .function("errorCallback", &StreamDecoder::errorCallback, pure_virtual())
+    .function("streamInfoCallback", optional_override(streamInfo))
     .allow_subclass<StreamDecoderImpl>("StreamDecoderImpl")
     ;
 }

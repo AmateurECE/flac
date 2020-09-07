@@ -3,6 +3,10 @@ import * as fs from 'fs';
 import * as util from 'util';
 let flac;
 
+function streamInfoCallback(streamInfo) {
+    console.log(streamInfo);
+}
+
 function readCallback(byteBuffer) {
     const fd = this.fd;
     try {
@@ -39,7 +43,8 @@ function errorCallback(status) {
 
 function main(fd) {
     const decoderCallbacks = {readCallback: readCallback.bind({fd}),
-                              writeCallback, errorCallback};
+                              writeCallback, errorCallback,
+                              streamInfoCallback};
     const decoder = flac.StreamDecoder.implement(decoderCallbacks);
     decoder.init();
 
