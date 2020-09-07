@@ -95,37 +95,41 @@ EMSCRIPTEN_BINDINGS(flac) {
   // Bindings for Stream Decoder
   //
   class_<FLAC::Decoder::Stream>("Stream")
-    // TODO: set_ogg_serial_number
-    // TODO: set_md5_checking
+    // TODO: FLAC::Decoder::Stream::set_ogg_serial_number
+    .function("set_md5_checking", &FLAC::Decoder::Stream::set_md5_checking)
     .function("set_metadata_respond",
         &FLAC::Decoder::Stream::set_metadata_respond)
-    // TODO: set_metadata_respond_application
+    // TODO: FLAC::Decoder::Stream::set_metadata_respond_application
     .function("set_metadata_respond_all",
         &FLAC::Decoder::Stream::set_metadata_respond_all)
-    // TODO: set_metadata_ignore
-    // TODO: set_metadata_ignore_application
-    // TODO: set_metadata_ignore_all
-    // TODO: get_state
-    // TODO: get_md5_checking
-    // TODO: get_total_samples
-    // TODO: get_channels
-    // TODO: get_channel_assignment
-    // TODO: get_bits_per_sample
-    // TODO: get_sample_rate
-    // TODO: get_blocksize
-    // TODO: get_decode_position
+    .function("set_metadata_ignore",
+        &FLAC::Decoder::Stream::set_metadata_ignore)
+    // TODO: FLAC::Decoder::Stream::set_metadata_ignore_application
+    .function("set_metadata_ignore_all",
+        &FLAC::Decoder::Stream::set_metadata_ignore_all)
+    // TODO: FLAC::Decoder::Stream::get_state
+    .function("get_md5_checking", &FLAC::Decoder::Stream::get_md5_checking)
+    .function("get_total_samples", &FLAC::Decoder::Stream::get_total_samples)
+    .function("get_channels", &FLAC::Decoder::Stream::get_channels)
+    // TODO: FLAC::Decoder::Stream::get_channel_assignment
+    .function("get_bits_per_sample",
+        &FLAC::Decoder::Stream::get_bits_per_sample)
+    .function("get_sample_rate", &FLAC::Decoder::Stream::get_sample_rate)
+    .function("get_blocksize", &FLAC::Decoder::Stream::get_blocksize)
+    // TODO: FLAC::Decoder::Stream::get_decode_position
     .function("init", &FLAC::Decoder::Stream::init)
-    // TODO: init_ogg
-    // TODO: finish
-    // TODO: flush
-    // TODO: reset
+    // TODO: FLAC::Decoder::Stream::init_ogg
+    .function("finish", &FLAC::Decoder::Stream::finish)
+    .function("flush", &FLAC::Decoder::Stream::flush)
+    .function("reset", &FLAC::Decoder::Stream::reset)
     .function("process_single", &FLAC::Decoder::Stream::process_single)
     .function("process_until_end_of_metadata",
         &FLAC::Decoder::Stream::process_until_end_of_metadata)
-    // TODO: process_until_end_of_stream
-    // TODO: skip_single_frame
-    // TODO: seek_absolute
-    // TODO: is_valid
+    .function("process_until_end_of_stream",
+        &FLAC::Decoder::Stream::process_until_end_of_stream)
+    // TODO: FLAC::Decoder::Stream::skip_single_frame
+    // TODO: FLAC::Decoder::Stream::seek_absolute
+    .function("is_valid", &FLAC::Decoder::Stream::is_valid)
     ;
 
   class_<StreamDecoder, base<FLAC::Decoder::Stream>>("StreamDecoder")
