@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as util from 'util';
 let flac;
 
-function streamInfoCallback(streamInfo) {
-    console.log(streamInfo);
+function metadataCallback(data) {
+    console.log(data);
 }
 
 function readCallback(byteBuffer) {
@@ -33,7 +33,6 @@ function readCallback(byteBuffer) {
 }
 
 function writeCallback(lpcmBuffer) {
-    console.log(lpcmBuffer);
     return flac.StreamDecoderWriteStatus.CONTINUE;
 }
 
@@ -44,8 +43,9 @@ function errorCallback(status) {
 function main(fd) {
     const decoderCallbacks = {readCallback: readCallback.bind({fd}),
                               writeCallback, errorCallback,
-                              streamInfoCallback};
+                              metadataCallback};
     const decoder = flac.StreamDecoder.implement(decoderCallbacks);
+    decoder.set_metadata_respond_all();
     decoder.init();
 
     // Seek through the file to the end of the metadata

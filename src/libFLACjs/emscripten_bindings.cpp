@@ -11,7 +11,6 @@
 ////
 
 #include <emscripten/bind.h>
-#include <stdint.h>
 
 #include "FLAC++/decoder.h"
 
@@ -27,9 +26,7 @@ public:
   virtual ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) = 0;
 
   virtual void errorCallback(::FLAC__StreamDecoderErrorStatus status) = 0;
-
-  // Metadata callbacks
-  virtual void streamInfoCallback(::FLAC__StreamMetadata_StreamInfo) {}
+  virtual void metadataCallback(val) = 0;
 
 protected:
   virtual ::FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[],
@@ -58,12 +55,31 @@ protected:
 
   virtual void metadata_callback(const ::FLAC__StreamMetadata* metadata) final
     override {
+    val tagObject = val::object();
+    tagObject.set("type", metadata->type);
+
     switch (metadata->type) {
     case FLAC__METADATA_TYPE_STREAMINFO:
-      streamInfoCallback(metadata->data.stream_info);
-      return;
-    default: return;
+      break;
+    case FLAC__METADATA_TYPE_PADDING:
+      break;
+    case FLAC__METADATA_TYPE_APPLICATION:
+      break;
+    case FLAC__METADATA_TYPE_SEEKTABLE:
+      break;
+    case FLAC__METADATA_TYPE_VORBIS_COMMENT:
+      break;
+    case FLAC__METADATA_TYPE_CUESHEET:
+      break;
+    case FLAC__METADATA_TYPE_PICTURE:
+      break;
+    case FLAC__METADATA_TYPE_UNDEFINED:
+      break;
+    default:
+      break;
     }
+
+    metadataCallback(tagObject);
   }
 };
 
@@ -82,8 +98,8 @@ public:
     return call<void>("error_callback", status);
   }
 
-  void streamInfoCallback(::FLAC__StreamMetadata_StreamInfo info) {
-    return call<void>("streamInfoCallback", info);
+  void metadataCallback(val data) {
+    return call<void>("metadataCallback", data);
   }
 };
 
@@ -114,6 +130,19 @@ EMSCRIPTEN_BINDINGS(flac) {
   //
   // Bindings for enumerations
   //
+  enum_<FLAC__MetadataType>("MetadataType")
+    .value("STREAMINFO", FLAC__METADATA_TYPE_STREAMINFO)
+    .value("PADDING", FLAC__METADATA_TYPE_PADDING)
+    .value("APPLICATION", FLAC__METADATA_TYPE_APPLICATION)
+    .value("SEEKTABLE", FLAC__METADATA_TYPE_SEEKTABLE)
+    .value("VORBIS_COMMENT", FLAC__METADATA_TYPE_VORBIS_COMMENT)
+    .value("CUESHEET", FLAC__METADATA_TYPE_CUESHEET)
+    .value("PICTURE", FLAC__METADATA_TYPE_PICTURE)
+    .value("UNDEFINED", FLAC__METADATA_TYPE_UNDEFINED)
+    ;
+
+  constant("MAX_METADATA_TYPE", FLAC__MAX_METADATA_TYPE);
+
   enum_<FLAC__StreamDecoderInitStatus>("StreamDecoderInitStatus")
     .value("OK", FLAC__STREAM_DECODER_INIT_STATUS_OK)
     .value("UNSUPPORTED_CONTAINER",
@@ -152,21 +181,45 @@ EMSCRIPTEN_BINDINGS(flac) {
   // Bindings for Stream Decoder
   //
   class_<FLAC::Decoder::Stream>("Stream")
+    // TODO: set_ogg_serial_number
+    // TODO: set_md5_checking
+    .function("set_metadata_respond",
+        &FLAC::Decoder::Stream::set_metadata_respond)
+    // TODO: set_metadata_respond_application
+    .function("set_metadata_respond_all",
+        &FLAC::Decoder::Stream::set_metadata_respond_all)
+    // TODO: set_metadata_ignore
+    // TODO: set_metadata_ignore_application
+    // TODO: set_metadata_ignore_all
+    // TODO: get_state
+    // TODO: get_md5_checking
+    // TODO: get_total_samples
+    // TODO: get_channels
+    // TODO: get_channel_assignment
+    // TODO: get_bits_per_sample
+    // TODO: get_sample_rate
+    // TODO: get_blocksize
+    // TODO: get_decode_position
+    .function("init", &FLAC::Decoder::Stream::init)
+    // TODO: init_ogg
+    // TODO: finish
+    // TODO: flush
+    // TODO: reset
+    .function("process_single", &FLAC::Decoder::Stream::process_single)
     .function("process_until_end_of_metadata",
         &FLAC::Decoder::Stream::process_until_end_of_metadata)
-    .function("process_single", &FLAC::Decoder::Stream::process_single)
-    .function("init", &FLAC::Decoder::Stream::init)
+    // TODO: process_until_end_of_stream
+    // TODO: skip_single_frame
+    // TODO: seek_absolute
+    // TODO: is_valid
     ;
 
-  const auto streamInfo = [](StreamDecoder& self,
-      ::FLAC__StreamMetadata_StreamInfo info) {
-                      return self.StreamDecoder::streamInfoCallback(info);
-                    };
   class_<StreamDecoder, base<FLAC::Decoder::Stream>>("StreamDecoder")
     .function("readCallback", &StreamDecoder::readCallback, pure_virtual())
     .function("writeCallback", &StreamDecoder::writeCallback, pure_virtual())
     .function("errorCallback", &StreamDecoder::errorCallback, pure_virtual())
-    .function("streamInfoCallback", optional_override(streamInfo))
+    .function("metadataCallback", &StreamDecoder::metadataCallback,
+        pure_virtual())
     .allow_subclass<StreamDecoderImpl>("StreamDecoderImpl")
     ;
 }
