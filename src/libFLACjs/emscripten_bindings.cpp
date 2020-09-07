@@ -26,22 +26,6 @@ using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(flac) {
   //
-  // Bindings for metadata
-  //
-  value_object<::FLAC__StreamMetadata_StreamInfo>("StreamInfo")
-    .field("min_blocksize", &::FLAC__StreamMetadata_StreamInfo::min_blocksize)
-    .field("max_blocksize", &::FLAC__StreamMetadata_StreamInfo::max_blocksize)
-    .field("min_framesize", &::FLAC__StreamMetadata_StreamInfo::min_framesize)
-    .field("max_framesize", &::FLAC__StreamMetadata_StreamInfo::max_framesize)
-    .field("sample_rate", &::FLAC__StreamMetadata_StreamInfo::sample_rate)
-    .field("channels", &::FLAC__StreamMetadata_StreamInfo::channels)
-    .field("bits_per_sample",
-        &::FLAC__StreamMetadata_StreamInfo::bits_per_sample)
-    // TODO: field "total_samples"
-    // TODO: field "md5sum"
-    ;
-
-  //
   // Bindings for enumerations
   //
   enum_<FLAC__MetadataType>("MetadataType")

@@ -67,6 +67,25 @@ void StreamDecoder::streamInfoMetadataGenerator(val object,
   object.set("data", streamInfo);
 }
 
+void StreamDecoder::vorbisCommentMetadataGenerator(val object,
+  const ::FLAC__StreamMetadata* metadata)
+{
+  val comments = val::object();
+  const auto* info = &(metadata->data.vorbis_comment);
+  comments.set("vendor_string",
+    val(std::string((const char*)info->vendor_string.entry)));
+  val tags = val::object();
+  for (FLAC__uint32 i = 0; i < info->num_comments; i++) {
+    std::string comment{(const char*)info->comments[i].entry};
+    auto delimiter = comment.find("=");
+    tags.set(val(comment.substr(0, delimiter)),
+      val(comment.substr(delimiter + 1)));
+  }
+
+  comments.set("comments", tags);
+  object.set("data", comments);
+}
+
 void StreamDecoder::metadata_callback(const ::FLAC__StreamMetadata* metadata)
 {
   val metadataObject = val::object();
@@ -80,7 +99,7 @@ void StreamDecoder::metadata_callback(const ::FLAC__StreamMetadata* metadata)
       // TODO: FLAC__METADATA_TYPE_PADDING
       // TODO: FLAC__METADATA_TYPE_APPLICATION
       // TODO: FLAC__METADATA_TYPE_SEEKTABLE
-      // TODO: FLAC__METADATA_TYPE_VORBIS_COMMENT
+      {FLAC__METADATA_TYPE_VORBIS_COMMENT, &vorbisCommentMetadataGenerator},
       // TODO: FLAC__METADATA_TYPE_CUESHEET
       // TODO: FLAC__METADATA_TYPE_PICTURE
     };
