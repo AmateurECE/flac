@@ -108,6 +108,26 @@ void StreamDecoder::seekTableMetadataGenerator(val object,
   object.set("data", seekTableContainer);
 }
 
+void StreamDecoder::pictureMetadataGenerator(val object,
+  const ::FLAC__StreamMetadata* metadata)
+{
+  val picture = val::object();
+  const auto* info = &(metadata->data.picture);
+  picture.set("type", info->type);
+  picture.set("mime_type", val(std::string((const char*)info->mime_type)));
+  picture.set("description", val(std::string((const char*)info->description)));
+  static_assert(sizeof(uint32_t) == sizeof(FLAC__uint32),
+    "FLAC__uint32 and uint32_t are not the same length!");
+  picture.set("width", val((uint32_t)info->width));
+  picture.set("height", val((uint32_t)info->height));
+  picture.set("depth", val((uint32_t)info->depth));
+  picture.set("colors", val((uint32_t)info->colors));
+  picture.set("data", val(typed_memory_view(info->data_length,
+        (uint8_t*)info->data)));
+
+  object.set("data", picture);
+}
+
 void StreamDecoder::metadata_callback(const ::FLAC__StreamMetadata* metadata)
 {
   val metadataObject = val::object();
@@ -123,7 +143,7 @@ void StreamDecoder::metadata_callback(const ::FLAC__StreamMetadata* metadata)
       {FLAC__METADATA_TYPE_SEEKTABLE, &seekTableMetadataGenerator},
       {FLAC__METADATA_TYPE_VORBIS_COMMENT, &vorbisCommentMetadataGenerator},
       // TODO: FLAC__METADATA_TYPE_CUESHEET
-      // TODO: FLAC__METADATA_TYPE_PICTURE
+      {FLAC__METADATA_TYPE_PICTURE, &pictureMetadataGenerator},
     };
 
   const auto result = generators.find(metadata->type);
