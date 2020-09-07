@@ -42,6 +42,7 @@ private:
   static void streamInfoMetadataGenerator(val, const ::FLAC__StreamMetadata*);
   static void vorbisCommentMetadataGenerator(val,
     const ::FLAC__StreamMetadata*);
+  static void seekTableMetadataGenerator(val, const ::FLAC__StreamMetadata*);
 };
 
 class StreamDecoderImpl : public emscripten::wrapper<StreamDecoder> {

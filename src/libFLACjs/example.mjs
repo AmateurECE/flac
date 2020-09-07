@@ -4,7 +4,7 @@ import * as util from 'util';
 let flac;
 
 function metadataCallback(data) {
-    console.log(data);
+    console.log(util.inspect(data, false, null, true));
 }
 
 function readCallback(byteBuffer) {

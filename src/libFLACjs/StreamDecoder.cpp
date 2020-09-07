@@ -86,6 +86,28 @@ void StreamDecoder::vorbisCommentMetadataGenerator(val object,
   object.set("data", comments);
 }
 
+void StreamDecoder::seekTableMetadataGenerator(val object,
+  const ::FLAC__StreamMetadata* metadata)
+{
+  val seekTableContainer = val::object();
+  val seekTable = val::array();
+  const auto* info = &(metadata->data.seek_table);
+  for (unsigned i = 0; i < info->num_points; i++) {
+    val seekPoint = val::object();
+    seekPoint.set("sample_number",
+      val(typed_memory_view(sizeof(FLAC__uint64) / sizeof(uint32_t),
+        (uint32_t*)&(info->points[i].sample_number))));
+    seekPoint.set("stream_offset",
+      val(typed_memory_view(sizeof(FLAC__uint64) / sizeof(uint32_t),
+        (uint32_t*)&(info->points[i].stream_offset))));
+    seekPoint.set("frame_samples", info->points[i].frame_samples);
+    seekTable.call<void>("push", seekPoint);
+  }
+
+  seekTableContainer.set("points", seekTable);
+  object.set("data", seekTableContainer);
+}
+
 void StreamDecoder::metadata_callback(const ::FLAC__StreamMetadata* metadata)
 {
   val metadataObject = val::object();
@@ -98,7 +120,7 @@ void StreamDecoder::metadata_callback(const ::FLAC__StreamMetadata* metadata)
       {FLAC__METADATA_TYPE_STREAMINFO, &streamInfoMetadataGenerator},
       // TODO: FLAC__METADATA_TYPE_PADDING
       // TODO: FLAC__METADATA_TYPE_APPLICATION
-      // TODO: FLAC__METADATA_TYPE_SEEKTABLE
+      {FLAC__METADATA_TYPE_SEEKTABLE, &seekTableMetadataGenerator},
       {FLAC__METADATA_TYPE_VORBIS_COMMENT, &vorbisCommentMetadataGenerator},
       // TODO: FLAC__METADATA_TYPE_CUESHEET
       // TODO: FLAC__METADATA_TYPE_PICTURE
