@@ -8,7 +8,7 @@
 //
 // CREATED:         09/07/2020
 //
-// LAST EDITED:     09/07/2020
+// LAST EDITED:     09/08/2020
 ////
 
 #include <emscripten/bind.h>
@@ -28,9 +28,9 @@ public:
 
 protected:
   virtual ::FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[],
-      size_t *bytes) final override;
+    size_t *bytes) final override;
   virtual ::FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame
-      *frame, const FLAC__int32 * const buffer[]) final override;
+    *frame, const FLAC__int32 * const buffer[]) final override;
   virtual void error_callback(::FLAC__StreamDecoderErrorStatus status) final
     override;
   virtual void metadata_callback(const ::FLAC__StreamMetadata* metadata) final
@@ -56,7 +56,7 @@ public:
 
   ::FLAC__StreamDecoderWriteStatus writeCallback(val lpcmBuffer) {
     return call<::FLAC__StreamDecoderWriteStatus>("writeCallback",
-        lpcmBuffer);
+      lpcmBuffer);
   }
 
   void errorCallback(::FLAC__StreamDecoderErrorStatus status) {

@@ -7,7 +7,7 @@
 //
 // CREATED:         09/01/2020
 //
-// LAST EDITED:     09/07/2020
+// LAST EDITED:     09/08/2020
 ////
 
 #include <emscripten/bind.h>
@@ -77,15 +77,15 @@ EMSCRIPTEN_BINDINGS(flac) {
   enum_<FLAC__StreamDecoderInitStatus>("StreamDecoderInitStatus")
     .value("OK", FLAC__STREAM_DECODER_INIT_STATUS_OK)
     .value("UNSUPPORTED_CONTAINER",
-        FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER)
+      FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER)
     .value("INVALID_CALLBACKS",
-        FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS)
+      FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS)
     .value("MEMORY_ALLOCATION_ERROR",
-        FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR)
+      FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR)
     .value("ERROR_OPENING_FILE",
-        FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE)
+      FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE)
     .value("ALREADY_INITIALIZED",
-        FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED)
+      FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED)
     ;
 
   enum_<FLAC__StreamDecoderReadStatus>("StreamDecoderReadStatus")
@@ -103,9 +103,9 @@ EMSCRIPTEN_BINDINGS(flac) {
     .value("LOST_SYNC", FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC)
     .value("BAD_HEADER", FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER)
     .value("FRAME_CRC_MISMATCH",
-        FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH)
+      FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH)
     .value("UNPARSEABLE_STREAM",
-        FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM)
+      FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM)
     ;
 
   //
@@ -115,22 +115,22 @@ EMSCRIPTEN_BINDINGS(flac) {
     // TODO: FLAC::Decoder::Stream::set_ogg_serial_number
     .function("set_md5_checking", &FLAC::Decoder::Stream::set_md5_checking)
     .function("set_metadata_respond",
-        &FLAC::Decoder::Stream::set_metadata_respond)
+      &FLAC::Decoder::Stream::set_metadata_respond)
     // TODO: FLAC::Decoder::Stream::set_metadata_respond_application
     .function("set_metadata_respond_all",
-        &FLAC::Decoder::Stream::set_metadata_respond_all)
+      &FLAC::Decoder::Stream::set_metadata_respond_all)
     .function("set_metadata_ignore",
-        &FLAC::Decoder::Stream::set_metadata_ignore)
+      &FLAC::Decoder::Stream::set_metadata_ignore)
     // TODO: FLAC::Decoder::Stream::set_metadata_ignore_application
     .function("set_metadata_ignore_all",
-        &FLAC::Decoder::Stream::set_metadata_ignore_all)
+      &FLAC::Decoder::Stream::set_metadata_ignore_all)
     // TODO: FLAC::Decoder::Stream::get_state
     .function("get_md5_checking", &FLAC::Decoder::Stream::get_md5_checking)
     .function("get_total_samples", &FLAC::Decoder::Stream::get_total_samples)
     .function("get_channels", &FLAC::Decoder::Stream::get_channels)
     // TODO: FLAC::Decoder::Stream::get_channel_assignment
     .function("get_bits_per_sample",
-        &FLAC::Decoder::Stream::get_bits_per_sample)
+      &FLAC::Decoder::Stream::get_bits_per_sample)
     .function("get_sample_rate", &FLAC::Decoder::Stream::get_sample_rate)
     .function("get_blocksize", &FLAC::Decoder::Stream::get_blocksize)
     // TODO: FLAC::Decoder::Stream::get_decode_position
@@ -141,9 +141,9 @@ EMSCRIPTEN_BINDINGS(flac) {
     .function("reset", &FLAC::Decoder::Stream::reset)
     .function("process_single", &FLAC::Decoder::Stream::process_single)
     .function("process_until_end_of_metadata",
-        &FLAC::Decoder::Stream::process_until_end_of_metadata)
+      &FLAC::Decoder::Stream::process_until_end_of_metadata)
     .function("process_until_end_of_stream",
-        &FLAC::Decoder::Stream::process_until_end_of_stream)
+      &FLAC::Decoder::Stream::process_until_end_of_stream)
     // TODO: FLAC::Decoder::Stream::skip_single_frame
     // TODO: FLAC::Decoder::Stream::seek_absolute
     .function("is_valid", &FLAC::Decoder::Stream::is_valid)
@@ -154,7 +154,7 @@ EMSCRIPTEN_BINDINGS(flac) {
     .function("writeCallback", &StreamDecoder::writeCallback, pure_virtual())
     .function("errorCallback", &StreamDecoder::errorCallback, pure_virtual())
     .function("metadataCallback", &StreamDecoder::metadataCallback,
-        pure_virtual())
+      pure_virtual())
     .allow_subclass<StreamDecoderImpl>("StreamDecoderImpl")
     ;
 }

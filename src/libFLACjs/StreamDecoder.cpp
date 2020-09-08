@@ -7,7 +7,7 @@
 //
 // CREATED:         09/07/2020
 //
-// LAST EDITED:     09/07/2020
+// LAST EDITED:     09/08/2020
 ////
 
 #include "StreamDecoder.h"
@@ -96,10 +96,10 @@ void StreamDecoder::seekTableMetadataGenerator(val object,
     val seekPoint = val::object();
     seekPoint.set("sample_number",
       val(typed_memory_view(sizeof(FLAC__uint64) / sizeof(uint32_t),
-        (uint32_t*)&(info->points[i].sample_number))));
+          (uint32_t*)&(info->points[i].sample_number))));
     seekPoint.set("stream_offset",
       val(typed_memory_view(sizeof(FLAC__uint64) / sizeof(uint32_t),
-        (uint32_t*)&(info->points[i].stream_offset))));
+          (uint32_t*)&(info->points[i].stream_offset))));
     seekPoint.set("frame_samples", info->points[i].frame_samples);
     seekTable.call<void>("push", seekPoint);
   }
